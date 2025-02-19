@@ -1,0 +1,7 @@
+name: "ValidTW"
+version: '0.0.1'
+main: dev.arctic.validTW.ValidTW
+api-version: '1.21'
+load: STARTUP
+authors: [ ArcticDev_ ]
+description: "validation for Typewriter quests and nodes"
