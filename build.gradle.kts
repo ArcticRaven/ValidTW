@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "2.1.20-RC"
+    kotlin("jvm") version "2.0.21"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("com.typewritermc.module-plugin") version "1.1.2"
 }
@@ -18,11 +18,13 @@ repositories {
     maven("https://maven.typewritermc.com/releases") {
         name = "typewriter"
     }
+    maven("https://maven.typewritermc.com/beta")
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("com.typewritermc:core:0.8.0-beta-153")
 }
 
 val targetJavaVersion = 21
@@ -42,7 +44,6 @@ tasks.processResources {
         expand(props)
     }
 }
-
 typewriter {
     namespace = "arcticdev"
 
