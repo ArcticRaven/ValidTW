@@ -24,7 +24,6 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("com.typewritermc:core:0.8.0-beta-153")
 }
 
 val targetJavaVersion = 21
@@ -44,6 +43,7 @@ tasks.processResources {
         expand(props)
     }
 }
+
 typewriter {
     namespace = "arcticdev"
 
@@ -55,6 +55,6 @@ typewriter {
         engineVersion = "0.8.0-beta-153"
         channel = com.typewritermc.moduleplugin.ReleaseChannel.BETA
 
-        paper {} // Ensures compatibility with the PaperMC API
+        paper {}
     }
 }

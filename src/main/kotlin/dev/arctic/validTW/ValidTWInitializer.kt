@@ -1,47 +1,46 @@
 package dev.arctic.validtw
 
+import com.typewritermc.core.TypewriterCore
 import com.typewritermc.core.entries.Entry
-import com.typewritermc.core.entries.Quest
-import com.typewritermc.core.entries.Objective
-import com.typewritermc.core.initialization.Initializable
-import com.typewritermc.core.initialization.Initializer
-import com.typewritermc.core.initialization.Singleton
+import com.typewritermc.core.entries.Library
+import com.typewritermc.core.entries.Page
+import com.typewritermc.core.entries.Ref
+import com.typewritermc.core.entries.PriorityEntry
+import com.typewritermc.core.extension.Initializable
+import com.typewritermc.loader.Extension
 import dev.arctic.validtw.validation.DependencyValidator
-import com.typewritermc.core.events.EntryCreateEvent
-import com.typewritermc.core.events.EntryModifyEvent
-import com.typewritermc.core.TypeWriter
 
-@Initializer
-@Singleton
-object ValidTWInitializer : Initializable {
+@Extension("validtw")
+class ValidTWInitializer : Initializable {
     private val validator = DependencyValidator()
 
     override suspend fun initialize() {
-        // Register validation handlers for entry creation/modification
-        TypeWriter.eventBus.subscribe<EntryCreateEvent> { event ->
-            val result = validateEntry(event.entry)
-            if (!result.valid) {
-                event.cancel(result.error ?: "Invalid dependency structure")
-            }
-        }
+        TypewriterCore.eventManager.register(this)
+    }
 
-        TypeWriter.eventBus.subscribe<EntryModifyEvent> { event ->
-            val result = validateEntry(event.entry)
-            if (!result.valid) {
-                event.cancel(result.error ?: "Invalid dependency structure")
-            }
+    fun onEntryCreate(event: com.typewritermc.core.entries.Entry) {
+        val result = validateEntry(event)
+        if (!result.valid) {
+            throw IllegalArgumentException(result.error ?: "Invalid dependency structure")
         }
     }
 
-    fun validateEntry(entry: Entry): ValidationResult {
-        if (entry !is Quest && entry !is Objective) {
+    fun onEntryModify(event: com.typewritermc.core.entries.Entry) {
+        val result = validateEntry(event)
+        if (!result.valid) {
+            throw IllegalArgumentException(result.error ?: "Invalid dependency structure")
+        }
+    }
+
+    private fun validateEntry(entry: Entry): ValidationResult {
+        if (entry !is Page && entry !is PriorityEntry) {
             return ValidationResult(true)
         }
 
         fun getDependencies(e: Entry): List<Entry> = when (e) {
-            is Quest -> listOf(e.quest).filterNotNull()
-            is Objective -> listOfNotNull(e.quest) + e.children.mapNotNull { it.ref().entry }
-            else -> e.children.mapNotNull { it.ref().entry }
+            is Page -> listOfNotNull(e.parent)
+            is PriorityEntry -> listOfNotNull(e.parent) + e.references.mapNotNull { it.get() }
+            else -> e.references.mapNotNull { it.get() }
         }
 
         val cycle = validator.detectCycle(
@@ -69,4 +68,4 @@ object ValidTWInitializer : Initializable {
 data class ValidationResult(
     val valid: Boolean,
     val error: String? = null
-) 
+)
